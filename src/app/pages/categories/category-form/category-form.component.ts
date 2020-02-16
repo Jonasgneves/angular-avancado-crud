@@ -40,6 +40,16 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked {
     this.setPageTittle();
   }
 
+  submitForm() {
+    this.submittingForm = true;
+
+    if (this.currentAction === 'new') {
+      this.createCategory();
+    } else {
+      this.updateCategory();
+    }
+  }
+
   // PRIVATE METHODS
 
   private setCurrentAction() {
@@ -53,9 +63,9 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked {
   private buildCategoryForm() {
     this.categoryForm = this.formBuilder.group({
       id: [null],
-      name: [null, Validators.required, Validators.minLength(2)],
+      name: [null, [Validators.required, Validators.minLength(2)]],
       description: [null]
-    })
+    });
   }
 
   private loadCategory() {
@@ -68,7 +78,7 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked {
           this.category = category;
           this.categoryForm.patchValue(this.category); // Binds loaded category data to categoryForm
         },
-        (error) => alert('ocorreu um erro no servidor tente novamente mais tarde!')
+        (error) => alert('Ocorreu um erro no servidor tente novamente mais tarde!')
       );
     }
   }
@@ -79,6 +89,48 @@ export class CategoryFormComponent implements OnInit, AfterContentChecked {
     } else {
       const categoryName = this.category.name || '';
       this.pageTittle = 'Editando Categoria: ' + categoryName;
+    }
+  }
+
+  // Montando objeto de acordo com o que já tem lá no formulário
+  private createCategory() {
+    const category: Category = Object.assign(new Category(), this.categoryForm.value);
+
+    this.categoryService.create(category)
+    .subscribe(
+      category => this.actionsForSuccess(category),
+      error => this.actionsForError(error)
+    );
+  }
+
+  private updateCategory() {
+    const category: Category = Object.assign(new Category(), this.categoryForm.value);
+
+    this.categoryService.update(category)
+    .subscribe(
+      category => this.actionsForSuccess(category),
+      error => this.actionsForError(error)
+    );
+  }
+
+  private actionsForSuccess(category: Category) {
+    toastr.success('Solicitação Processada Com Sucesso!');
+
+    // redirec/reload component page
+    this.router.navigateByUrl('categories', { skipLocationChange: true }).then(
+      () => this.router.navigate(['categories', category.id, 'edit'])
+    );
+  }
+
+  private actionsForError(error) {
+    toastr.error('Ocorreu um Erro ao Processar Sua Solicitação!');
+
+    this.submittingForm = false;
+
+    if (error.status === 422) {
+      this.serverErrorMessages = JSON.parse(error._body).errors;
+    } else {
+      this.serverErrorMessages = ['Falha na Comunicação com o servidor. Por favor Tente mais Tarde!'];
     }
   }
 }
