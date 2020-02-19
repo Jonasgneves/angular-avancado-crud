@@ -2,7 +2,7 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
     <li class="breadcrumb-item"><a routerLink="/entries">Lançamentos</a></li>
-    <li class="breadcrumb-item active"><a routerLink="/">{{pageTittle}}</a></li>
+    <li class="breadcrumb-item active">{{pageTittle}}</li>
   </ol>
 </nav>
 
@@ -110,7 +110,7 @@
           <label for="categoryId">Categoria</label>
 
           <select name="categoryId" id="categoryId" formControlName="categoryId" class="form-control">
-            <option *ngFor="let category of categories" [value]="category.name">{{ category.name }}</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
           </select>
 
           <div class="text-danger" *ngIf="entryForm.get('categoryId').invalid && entryForm.get('categoryId').touched">
